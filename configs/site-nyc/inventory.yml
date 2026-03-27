@@ -1,0 +1,5 @@
+---
+hostname: nyc-switch1
+platform: ios
+site: nyc
+role: access-switch
