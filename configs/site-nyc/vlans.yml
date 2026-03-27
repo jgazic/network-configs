@@ -9,3 +9,6 @@ vlans:
   - id: 30
     name: USERS
     ip_range: 10.10.30.0/24
+  - id: 10
+    name: PRINTERS
+    ip_range: 10.10.100.0/24
