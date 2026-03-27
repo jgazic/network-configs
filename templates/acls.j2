@@ -1,0 +1,20 @@
+{% for acl in acls %}
+ip access-list {{ acl.type }} {{ acl.name }}
+{%     for entry in acl.entries %}
+{%         if entry.source == 'any' %}
+{%             set src = 'any' %}
+{%         else %}
+{%             set src = entry.source | cidr_to_wildcard %}
+{%         endif %}
+{%         if entry.destination == 'any' %}
+{%             set dst = 'any' %}
+{%         else %}
+{%             set dst = entry.destination | cidr_to_wildcard %}
+{%         endif %}
+{%         if entry.dst_port is defined %}
+ {{ entry.sequence }} {{ entry.action }} {{ entry.protocol }} {{ src }} {{ dst }} eq {{ entry.dst_port }}
+{%         else %}
+ {{ entry.sequence }} {{ entry.action }} {{ entry.protocol }} {{ src }} {{ dst }}
+{%         endif %}
+{%     endfor %}
+{% endfor %}
