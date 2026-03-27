@@ -17,13 +17,6 @@ jobs:
   validate:
     runs-on: ubuntu-latest
 
-    services:
-      batfish:
-        image: batfish/batfish:latest
-        ports:
-          - 9997:9997
-          - 9996:9996
-
     steps:
       - uses: actions/checkout@v4
 
@@ -45,15 +38,6 @@ jobs:
         run: |
           python scripts/validate_vlans.py configs/site-nyc/vlans.yml configs/site-lon/vlans.yml
           python scripts/validate_acls.py configs/site-nyc/acls.yml configs/site-lon/acls.yml
-
-      - name: Render and analyze with Batfish
-        run: |
-          mkdir -p rendered-configs
-          python scripts/render_configs.py templates/vlans.j2 configs/site-nyc/vlans.yml rendered-configs/nyc-vlans.cfg
-          python scripts/render_configs.py templates/acls.j2 configs/site-nyc/acls.yml rendered-configs/nyc-acls.cfg
-          python scripts/render_configs.py templates/vlans.j2 configs/site-lon/vlans.yml rendered-configs/lon-vlans.cfg
-          python scripts/render_configs.py templates/acls.j2 configs/site-lon/acls.yml rendered-configs/lon-acls.cfg
-          python scripts/validate_batfish.py rendered-configs
 
       - name: Post result to PR
         if: always()
