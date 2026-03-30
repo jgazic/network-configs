@@ -1,0 +1,5 @@
+venv/
+rendered-configs/
+batfish-snapshot/
+__pycache__/
+*.pyc

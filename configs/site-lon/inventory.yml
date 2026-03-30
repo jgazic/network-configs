@@ -1,0 +1,5 @@
+---
+hostname: lon-switch2
+platform: ios
+site: lon
+role: access-switch

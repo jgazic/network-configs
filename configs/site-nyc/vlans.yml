@@ -1,0 +1,11 @@
+---
+vlans:
+  - id: 10
+    name: MGMT
+    ip_range: 10.10.10.0/24
+  - id: 20
+    name: SERVERS
+    ip_range: 10.10.20.0/24
+  - id: 30
+    name: USERS
+    ip_range: 10.10.30.0/24

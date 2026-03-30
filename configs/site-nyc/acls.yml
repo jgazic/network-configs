@@ -1,0 +1,22 @@
+---
+acls:
+  - name: MGMT_ACCESS
+    type: extended
+    entries:
+      - sequence: 10
+        action: permit
+        protocol: tcp
+        source: 10.10.10.0/24
+        destination: any
+        dst_port: 22
+      - sequence: 20
+        action: permit
+        protocol: tcp
+        source: 10.10.10.0/24
+        destination: any
+        dst_port: 443
+      - sequence: 30
+        action: permit
+        protocol: icmp
+        source: 10.10.10.0/24
+        destination: any
