@@ -1,5 +1,5 @@
 {% for acl in acls %}
-access-list {{ acl.name }}
+ip access-list {{ acl.type }} {{ acl.name }}
 {% for entry in acl.entries %}
 {% if entry.source == 'any' %}
 {% set src = 'any' %}
