@@ -12,3 +12,4 @@ vlans:
   - id: 50
     name: PRINTERS
     ip_range: 10.10.50.0/24
+
