@@ -1,0 +1,84 @@
+---
+name: Validate Network Configs
+
+on:
+  pull_request:
+    paths:
+      - "configs/**"
+      - "schemas/**"
+      - "templates/**"
+      - "scripts/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Schema validation
+        run: |
+          python scripts/validate_schema.py schemas/vlans.json configs/site-nyc/vlans.yml
+          python scripts/validate_schema.py schemas/vlans.json configs/site-lon/vlans.yml
+          python scripts/validate_schema.py schemas/acls.json configs/site-nyc/acls.yml
+          python scripts/validate_schema.py schemas/acls.json configs/site-lon/acls.yml
+
+      - name: VLAN and ACL validators
+        run: |
+          python scripts/validate_vlans.py configs/site-nyc/vlans.yml configs/site-lon/vlans.yml
+          python scripts/validate_acls.py configs/site-nyc/acls.yml configs/site-lon/acls.yml
+
+  validate-configs:
+    runs-on: ubuntu-latest
+
+    services:
+      batfish:
+        image: batfish/batfish:latest
+        ports:
+          - 9997:9997
+          - 9996:9996
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Render and analyze with Batfish
+        run: |
+          mkdir -p rendered-configs batfish-snapshot/configs
+          python scripts/render_configs.py templates/vlans.j2 configs/site-nyc/vlans.yml rendered-configs/nyc-vlans.cfg
+          python scripts/render_configs.py templates/acls.j2 configs/site-nyc/acls.yml rendered-configs/nyc-acls.cfg
+          python scripts/render_configs.py templates/vlans.j2 configs/site-lon/vlans.yml rendered-configs/lon-vlans.cfg
+          python scripts/render_configs.py templates/acls.j2 configs/site-lon/acls.yml rendered-configs/lon-acls.cfg
+          cp rendered-configs/*-acls.cfg batfish-snapshot/configs/
+          python scripts/validate_batfish.py batfish-snapshot
+
+  comment:
+    runs-on: ubuntu-latest
+    needs: [validate-data, validate-configs]
+    if: always()
+    steps:
+      - run: gh pr comment $PR --repo $REPO --body "$BODY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BODY: |
+            Data validation: ${{ needs.validate-data.result }}
+            Config analysis: ${{ needs.validate-configs.result }}
